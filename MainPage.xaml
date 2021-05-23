@@ -1,0 +1,106 @@
+<Page
+    x:Class="Hasher2.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Hasher2"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource SystemControlAcrylicWindowBrush}"
+    AllowDrop="True"
+    DragOver="Page_DragOver"
+    Drop="Page_Drop">
+
+    <Grid RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="12" Margin="12,24,12,0">
+            <ComboBox
+                Header="Hash algorithm"
+                SelectedValue="{x:Bind ViewModel.SelectedAlgorithm, Mode=TwoWay}"
+                IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                <x:String>MD5</x:String>
+                <x:String>SHA1</x:String>
+                <x:String>SHA256</x:String>
+                <x:String>SHA512</x:String>
+            </ComboBox>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    Grid.Column="0"
+                    Content="Choose a file to hash..."
+                    IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
+                    Click="BrowseButton_Click" />
+                <TextBlock
+                    Grid.Column="1"
+                    Foreground="{ThemeResource SystemErrorTextColor}"
+                    Padding="0,6,0,0"
+                    Text="{x:Bind ViewModel.PickedFileName, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+            <TextBox
+                Header="Output hash"
+                IsReadOnly="True"
+                Text="{x:Bind ViewModel.OutputHash, Mode=OneWay}"
+                GotFocus="OutputHash_GotFocus" />
+
+            <TextBox
+                Header="Compare hash"
+                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}" />
+
+            <TextBlock
+                Foreground="{x:Bind ViewModel.HashCompareStatusTextColor, Mode=OneWay}"
+                Text="{x:Bind ViewModel.HashCompareStatusText, Mode=OneWay}" />
+        </StackPanel>
+
+        <muxc:ProgressBar
+            Grid.Row="1"
+            Margin="12,0"
+            Maximum="100"
+            Value="{x:Bind ViewModel.Progress, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.ProgressVisibility, Mode=OneWay}" />
+
+        <CommandBar
+            Grid.Row="2"
+            OverflowButtonVisibility="Collapsed"
+            DefaultLabelPosition="Right">
+            <AppBarButton
+                IsEnabled="{x:Bind ViewModel.HashValueReady, Mode=OneWay}"
+                Icon="Switch"
+                Label="Transfer"
+                Click="TransferButton_Click" />
+            <AppBarButton
+                IsEnabled="{x:Bind ViewModel.HashValueReady, Mode=OneWay}"
+                Icon="Copy"
+                Label="Copy"
+                Click="CopyButton_Click">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="C" />
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
+            <AppBarButton Icon="Paste" Label="Paste" Click="PasteButton_Click">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="V" />
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
+            <AppBarButton
+                IsEnabled="{x:Bind ViewModel.PickedFileReady, Mode=OneWay}"
+                Label="{x:Bind ViewModel.HashButtonText, Mode=OneWay}"
+                Click="HashButton_Click">
+                <AppBarButton.Icon>
+                    <SymbolIcon Symbol="{x:Bind ViewModel.HashButtonIcon, Mode=OneWay}" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </CommandBar>
+    </Grid>
+</Page>
