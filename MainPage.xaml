@@ -6,20 +6,57 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:icore="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     Background="{ThemeResource SystemControlAcrylicWindowBrush}"
     AllowDrop="True"
     DragOver="Page_DragOver"
     Drop="Page_Drop">
 
-    <Grid RowSpacing="12">
+    <!-- set transparent main grid background to allow dropping anywhere -->
+    <Grid RowSpacing="12" Background="Transparent">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Spacing="12" Margin="12,24,12,0">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="WindowFocusStates">
+                <VisualState x:Name="WindowFocused">
+                    <VisualState.Setters>
+                        <Setter
+                            Target="AppTitleBarText.Foreground"
+                            Value="{ThemeResource SystemBaseHighColor}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="WindowNotFocused">
+                    <VisualState.Setters>
+                        <Setter
+                            Target="AppTitleBarText.Foreground"
+                            Value="{ThemeResource SystemChromeDisabledLowColor}"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Grid x:Name="AppTitleBar" Background="Transparent">
+            <TextBlock
+                x:Name="AppTitleBarText"
+                Text="Hasher"
+                Margin="12,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                FontSize="12"
+                TextTrimming="CharacterEllipsis"/>
+        </Grid>
+
+        <StackPanel
+            Grid.Row="1"
+            Spacing="12"
+            Margin="12,0">
             <ComboBox
                 Header="Hash algorithm"
                 SelectedValue="{x:Bind ViewModel.SelectedAlgorithm, Mode=TwoWay}"
@@ -37,14 +74,14 @@
                 </Grid.ColumnDefinitions>
                 <Button
                     Grid.Column="0"
-                    Content="Choose a file to hash..."
+                    Content="Choose a file to hash"
                     IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
                     Click="BrowseButton_Click" />
                 <TextBlock
                     Grid.Column="1"
                     Foreground="{ThemeResource SystemErrorTextColor}"
                     Padding="0,6,0,0"
-                    Text="{x:Bind ViewModel.PickedFileName, Mode=OneWay}"
+                    Text="{x:Bind ViewModel.PickedFile.Name, Mode=OneWay}"
                     TextTrimming="CharacterEllipsis" />
             </Grid>
 
@@ -58,20 +95,62 @@
                 Header="Compare hash"
                 Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}" />
 
-            <TextBlock
-                Foreground="{x:Bind ViewModel.HashCompareStatusTextColor, Mode=OneWay}"
-                Text="{x:Bind ViewModel.HashCompareStatusText, Mode=OneWay}" />
+            <TextBlock>
+                <i:Interaction.Behaviors>
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.HashCompareStatus, Mode=OneWay}"
+                        Value="True">
+                        <icore:ChangePropertyAction
+                            PropertyName="Foreground"
+                            Value="{ThemeResource SystemBaseHighColor}" />
+                        <icore:ChangePropertyAction
+                            PropertyName="Text"
+                            Value="Hashes match." />
+                    </icore:DataTriggerBehavior>
+                    
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.HashCompareStatus, Mode=OneWay}"
+                        Value="False">
+                        <icore:ChangePropertyAction
+                            PropertyName="Foreground"
+                            Value="{ThemeResource SystemErrorTextColor}" />
+                        <icore:ChangePropertyAction
+                            PropertyName="Text"
+                            Value="Hashes do not match." />
+                    </icore:DataTriggerBehavior>
+                    
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.HashCompareStatus, Mode=OneWay}"
+                        Value="">
+                        <icore:ChangePropertyAction
+                            PropertyName="Text"
+                            Value="" />
+                    </icore:DataTriggerBehavior>
+                </i:Interaction.Behaviors>
+            </TextBlock>
         </StackPanel>
 
         <muxc:ProgressBar
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="12,0"
             Maximum="100"
-            Value="{x:Bind ViewModel.Progress, Mode=OneWay}"
-            Visibility="{x:Bind ViewModel.ProgressVisibility, Mode=OneWay}" />
+            Value="{x:Bind ViewModel.Progress, Mode=OneWay}">
+            <i:Interaction.Behaviors>
+                <icore:DataTriggerBehavior
+                    Binding="{x:Bind ViewModel.ShowProgress, Mode=OneWay}"
+                    Value="True">
+                    <icore:ChangePropertyAction PropertyName="Visibility" Value="Visible" />
+                </icore:DataTriggerBehavior>
+                <icore:DataTriggerBehavior
+                    Binding="{x:Bind ViewModel.ShowProgress, Mode=OneWay}"
+                    Value="False">
+                    <icore:ChangePropertyAction PropertyName="Visibility" Value="Collapsed" />
+                </icore:DataTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </muxc:ProgressBar>
 
         <CommandBar
-            Grid.Row="2"
+            Grid.Row="3"
             OverflowButtonVisibility="Collapsed"
             DefaultLabelPosition="Right">
             <AppBarButton
@@ -95,11 +174,22 @@
             </AppBarButton>
             <AppBarButton
                 IsEnabled="{x:Bind ViewModel.PickedFileReady, Mode=OneWay}"
-                Label="{x:Bind ViewModel.HashButtonText, Mode=OneWay}"
                 Click="HashButton_Click">
-                <AppBarButton.Icon>
-                    <SymbolIcon Symbol="{x:Bind ViewModel.HashButtonIcon, Mode=OneWay}" />
-                </AppBarButton.Icon>
+                <i:Interaction.Behaviors>
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.Enabled, Mode=OneWay}"
+                        Value="True">
+                        <icore:ChangePropertyAction PropertyName="Icon" Value="Play" />
+                        <icore:ChangePropertyAction PropertyName="Label" Value="Hash" />
+                    </icore:DataTriggerBehavior>
+
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.Enabled, Mode=OneWay}"
+                        Value="False">
+                        <icore:ChangePropertyAction PropertyName="Icon" Value="Cancel" />
+                        <icore:ChangePropertyAction PropertyName="Label" Value="Cancel" />
+                    </icore:DataTriggerBehavior>
+                </i:Interaction.Behaviors>
             </AppBarButton>
         </CommandBar>
     </Grid>
