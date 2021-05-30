@@ -7,9 +7,9 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="ec635a07-8298-4d42-af55-a6a2b74ba9f7"
+    Name="a4fc97c8-ec4a-4fdb-ac92-41929d6f1041"
     Publisher="CN=Dinh Ngoc Tu Code Signing"
-    Version="1.0.0.0" />
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="ec635a07-8298-4d42-af55-a6a2b74ba9f7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -37,7 +37,8 @@
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="Calculate file hashes."
         BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
+        <uap:SplashScreen Image="Assets\SplashScreen.png"/>
       </uap:VisualElements>
     </Application>
   </Applications>
