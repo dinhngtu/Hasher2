@@ -135,8 +135,10 @@ namespace Hasher2 {
         }
 
         private async void PasteButton_Click(object sender, RoutedEventArgs e) {
-            ViewModel.CompareHash = await Clipboard.GetContent().GetTextAsync();
-            SyncHashAlgo();
+            if (Clipboard.GetContent().Contains(StandardDataFormats.Text)) {
+                ViewModel.CompareHash = await Clipboard.GetContent().GetTextAsync();
+                SyncHashAlgo();
+            }
         }
 
         private void HashButton_Click(object sender, RoutedEventArgs e) {
