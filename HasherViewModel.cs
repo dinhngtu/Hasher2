@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
+using Windows.Security.Cryptography.Core;
 using Windows.Storage;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 
 namespace Hasher2 {
     public class HasherViewModel : INotifyPropertyChanged {
@@ -41,7 +42,7 @@ namespace Hasher2 {
             }
             set {
                 if (_compareHash != value) {
-                    _compareHash = value;
+                    _compareHash = Regex.Replace(value ?? "", @"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
                 }
             }
@@ -55,6 +56,7 @@ namespace Hasher2 {
             set {
                 if (_pickedFile != value) {
                     _pickedFile = value;
+                    _hashOutputInSync = false;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
                 }
             }
@@ -94,6 +96,28 @@ namespace Hasher2 {
             set {
                 if (_selectedAlgorithm != value) {
                     _selectedAlgorithm = value;
+                    _hashOutputInSync = false;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+                }
+            }
+        }
+
+        public IList<string> AvailableAlgorithms = new List<string>() {
+            HashAlgorithmNames.Md5,
+            HashAlgorithmNames.Sha1,
+            HashAlgorithmNames.Sha256,
+            HashAlgorithmNames.Sha384,
+            HashAlgorithmNames.Sha512,
+        };
+
+        private bool _hashOutputInSync;
+        public bool HashOutputInSync {
+            get {
+                return _hashOutputInSync;
+            }
+            set {
+                if (_hashOutputInSync != value) {
+                    _hashOutputInSync = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
                 }
             }
@@ -101,14 +125,18 @@ namespace Hasher2 {
 
         public bool PickedFileReady => PickedFile != null;
         public bool HashValueReady => !string.IsNullOrEmpty(OutputHash);
+
         public string HashCompareStatus {
             get {
                 if (!Enabled
                     || string.IsNullOrEmpty(OutputHash)
-                    || string.IsNullOrWhiteSpace(CompareHash)) {
+                    || string.IsNullOrEmpty(CompareHash)) {
                     return "";
                 }
-                return string.Equals(OutputHash, CompareHash?.Trim(), StringComparison.OrdinalIgnoreCase).ToString();
+                if (HashValueReady && !HashOutputInSync) {
+                    return "NeedsRehash";
+                }
+                return string.Equals(OutputHash, CompareHash, StringComparison.OrdinalIgnoreCase).ToString();
             }
         }
 

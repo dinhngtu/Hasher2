@@ -60,12 +60,8 @@
             <ComboBox
                 Header="Hash algorithm"
                 SelectedValue="{x:Bind ViewModel.SelectedAlgorithm, Mode=TwoWay}"
-                IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
-                <x:String>MD5</x:String>
-                <x:String>SHA1</x:String>
-                <x:String>SHA256</x:String>
-                <x:String>SHA512</x:String>
-            </ComboBox>
+                IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
+                ItemsSource="{x:Bind ViewModel.AvailableAlgorithms, Mode=OneTime}" Loaded="ComboBox_Loaded" />
 
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -93,10 +89,22 @@
 
             <TextBox
                 Header="Compare hash"
-                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}" />
+                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}"
+                Paste="CompareHash_Paste" />
 
             <TextBlock>
                 <i:Interaction.Behaviors>
+                    <icore:DataTriggerBehavior
+                        Binding="{x:Bind ViewModel.HashCompareStatus, Mode=OneWay}"
+                        Value="NeedsRehash">
+                        <icore:ChangePropertyAction
+                            PropertyName="Foreground"
+                            Value="{ThemeResource SystemErrorTextColor}" />
+                        <icore:ChangePropertyAction
+                            PropertyName="Text"
+                            Value="Output hash is out of date." />
+                    </icore:DataTriggerBehavior>
+                    
                     <icore:DataTriggerBehavior
                         Binding="{x:Bind ViewModel.HashCompareStatus, Mode=OneWay}"
                         Value="True">

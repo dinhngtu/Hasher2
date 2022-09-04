@@ -52,7 +52,6 @@ namespace Hasher2 {
 
             ViewModel = new HasherViewModel() {
                 Enabled = true,
-                SelectedAlgorithm = "SHA256",
                 ShowProgress = false,
             };
         }
@@ -137,6 +136,7 @@ namespace Hasher2 {
 
         private async void PasteButton_Click(object sender, RoutedEventArgs e) {
             ViewModel.CompareHash = await Clipboard.GetContent().GetTextAsync();
+            SyncHashAlgo();
         }
 
         private void HashButton_Click(object sender, RoutedEventArgs e) {
@@ -196,6 +196,7 @@ namespace Hasher2 {
                             ViewModel.OutputHash = BitConverter.ToString(hasher.GetValueAndReset().ToArray()).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
                             ViewModel.Progress = 100.0;
                             ViewModel.ShowProgress = true;
+                            ViewModel.HashOutputInSync = true;
                         } else {
                             ViewModel.OutputHash = null;
                             ViewModel.Progress = 0.0;
@@ -208,6 +209,36 @@ namespace Hasher2 {
 
         private void OutputHash_GotFocus(object sender, RoutedEventArgs e) {
             (sender as TextBox)?.SelectAll();
+        }
+
+        private void CompareHash_Paste(object sender, TextControlPasteEventArgs e) {
+            SyncHashAlgo();
+        }
+
+        private void SyncHashAlgo() {
+            switch (ViewModel.CompareHash?.Length) {
+                case 32:
+                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Md5;
+                    break;
+                case 40:
+                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha1;
+                    break;
+                case 64:
+                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha256;
+                    break;
+                case 96:
+                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha384;
+                    break;
+                case 128:
+                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha512;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void ComboBox_Loaded(object sender, RoutedEventArgs e) {
+            ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha256;
         }
     }
 }
