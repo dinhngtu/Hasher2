@@ -35,7 +35,7 @@ namespace Hasher2 {
         private const int BlockSize = 64 * 1024;
         private const long HashReportBlockSize = 1024 * 1024;
         private const ulong AutoHashSize = ulong.MaxValue;
-        private readonly Size MinSize = new Size(500, 380);
+        private readonly Size MinSize = new Size(520, 400);
 
         public HasherViewModel ViewModel { get; set; }
 
