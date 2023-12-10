@@ -91,6 +91,9 @@ namespace Hasher2 {
         }
 
         private async Task SetPickedFile(object sender, RoutedEventArgs e, StorageFile picked, bool autoHash = true) {
+            if (picked == null) {
+                return;
+            }
             ViewModel.PickedFile = picked;
             ViewModel.Progress = 0.0;
             ViewModel.ShowProgress = false;
@@ -100,7 +103,9 @@ namespace Hasher2 {
         }
 
         private void Page_DragOver(object sender, DragEventArgs e) {
-            e.AcceptedOperation = DataPackageOperation.Link;
+            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+                e.AcceptedOperation = DataPackageOperation.Link;
+            }
         }
 
         private async void Page_Drop(object sender, DragEventArgs e) {
@@ -116,9 +121,7 @@ namespace Hasher2 {
             var picker = new FileOpenPicker();
             picker.FileTypeFilter.Add("*");
             var picked = await picker.PickSingleFileAsync();
-            if (picked != null) {
-                await SetPickedFile(sender, e, picked, autoHash: false);
-            }
+            await SetPickedFile(sender, e, picked, autoHash: false);
         }
 
         private void TransferButton_Click(object sender, RoutedEventArgs e) {
