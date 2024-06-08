@@ -32,8 +32,8 @@ namespace Hasher2 {
     /// </summary>
     [System.Runtime.InteropServices.Guid("DCBE1619-05D2-40DA-ABAC-99C5D6D8412B")]
     public sealed partial class MainPage : Page {
-        private const int BlockSize = 64 * 1024;
-        private const long HashReportBlockSize = 1024 * 1024;
+        private const int BlockSize = 128 * 1024;
+        private const long HashReportBlockSize = 32 * 1024 * 1024;
         private const ulong AutoHashSize = ulong.MaxValue;
         private readonly Size MinSize = new Size(520, 400);
 
