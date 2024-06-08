@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
@@ -165,7 +166,7 @@ namespace Hasher2 {
 
             _ = Windows.System.Threading.ThreadPool.RunAsync(async item => {
                 bool success = false;
-                var hasher = HashAlgorithmProvider.OpenAlgorithm(algoId).CreateHash();
+                var hasher = HasherViewModel.CreateHash(algoId);
                 try {
                     if (hasher != null) {
                         using var stream = await sf.OpenStreamForReadAsync();
@@ -179,8 +180,12 @@ namespace Hasher2 {
                             if (readCount == 0) {
                                 success = true;
                                 break;
+                            } else if (hasher is NonCryptographicHashAlgorithm nonCryptoHasher) {
+                                nonCryptoHasher.Append(buffer.AsSpan(0, readCount));
+                            } else if (hasher is CryptographicHash cryptoHasher) {
+                                cryptoHasher.Append(buffer.AsBuffer(0, readCount));
                             } else {
-                                hasher.Append(buffer.AsBuffer(0, readCount));
+                                throw new Exception("cannot find hash algorithm");
                             }
 
                             if (stream.Position % HashReportBlockSize == 0) {
@@ -198,7 +203,17 @@ namespace Hasher2 {
                         ViewModel.CancellationTokenSource?.Dispose();
                         ViewModel.CancellationTokenSource = null;
                         if (success) {
-                            ViewModel.OutputHash = BitConverter.ToString(hasher.GetValueAndReset().ToArray()).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
+                            var hashValue = new byte[0];
+                            if (hasher is NonCryptographicHashAlgorithm nonCryptoHasher) {
+                                switch (algoId) {
+                                    case "CRC32":
+                                        hashValue = nonCryptoHasher.GetHashAndReset().Reverse().ToArray();
+                                        break;
+                                }
+                            } else if (hasher is CryptographicHash cryptoHasher) {
+                                hashValue = cryptoHasher.GetValueAndReset().ToArray();
+                            }
+                            ViewModel.OutputHash = BitConverter.ToString(hashValue).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
                             ViewModel.Progress = 100.0;
                             ViewModel.ShowProgress = true;
                             ViewModel.HashOutputInSync = true;
@@ -222,6 +237,12 @@ namespace Hasher2 {
 
         private void SyncHashAlgo() {
             switch (ViewModel.CompareHash?.Length) {
+                case 8:
+                    ViewModel.SelectedAlgorithm = "CRC32";
+                    break;
+                case 16:
+                    ViewModel.SelectedAlgorithm = "CRC64";
+                    break;
                 case 32:
                     ViewModel.SelectedAlgorithm = HashAlgorithmNames.Md5;
                     break;

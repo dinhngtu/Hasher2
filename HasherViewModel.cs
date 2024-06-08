@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO.Hashing;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Windows.Security.Cryptography.Core;
@@ -103,12 +104,24 @@ namespace Hasher2 {
         }
 
         public IList<string> AvailableAlgorithms = new List<string>() {
+            "CRC32",
             HashAlgorithmNames.Md5,
             HashAlgorithmNames.Sha1,
             HashAlgorithmNames.Sha256,
             HashAlgorithmNames.Sha384,
             HashAlgorithmNames.Sha512,
         };
+
+        public static object CreateHash(string algoId) {
+            switch (algoId) {
+                case "CRC32":
+                    return new Crc32();
+                case "CRC64":
+                    return new Crc64();
+                default:
+                    return HashAlgorithmProvider.OpenAlgorithm(algoId).CreateHash();
+            }
+        }
 
         private bool _hashOutputInSync;
         public bool HashOutputInSync {
