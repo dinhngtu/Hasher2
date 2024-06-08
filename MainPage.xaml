@@ -9,7 +9,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:icore="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
-    Background="{ThemeResource SystemControlAcrylicWindowBrush}"
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     AllowDrop="True"
     DragOver="Page_DragOver"
     Drop="Page_Drop">
