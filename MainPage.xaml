@@ -63,7 +63,7 @@
                 Header="Hash algorithm"
                 SelectedValue="{x:Bind ViewModel.SelectedAlgorithm, Mode=TwoWay}"
                 IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
-                ItemsSource="{x:Bind ViewModel.AvailableAlgorithms, Mode=OneTime}" Loaded="ComboBox_Loaded" />
+                ItemsSource="{x:Bind ViewModel.AvailableAlgorithmNames, Mode=OneTime}" Loaded="ComboBox_Loaded" />
 
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -94,8 +94,7 @@
             <TextBox
                 x:Uid="CompareHashTextbox"
                 Header="Compare hash"
-                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}"
-                Paste="CompareHash_Paste" />
+                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}" />
 
             <TextBlock>
                 <i:Interaction.Behaviors>

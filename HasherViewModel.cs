@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO.Hashing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml.Linq;
+using Windows.Perception.Spatial;
 using Windows.Security.Cryptography.Core;
 using Windows.Storage;
 
@@ -36,6 +39,25 @@ namespace Hasher2 {
             }
         }
 
+        string FindHash(string value) {
+            if (!string.IsNullOrEmpty(OutputHash)) {
+                var hashStringLen = OutputHash.Length;
+                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
+                if (match.Success) {
+                    return Regex.Replace(match.Value, $"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
+                }
+            }
+            // long hash to short hash
+            foreach (var avail in AvailableAlgorithms.Reverse()) {
+                var hashStringLen = avail.HashLength / 4;
+                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
+                if (match.Success) {
+                    return Regex.Replace(match.Value, $"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
+                }
+            }
+            return null;
+        }
+
         private string _compareHash;
         public string CompareHash {
             get {
@@ -43,8 +65,9 @@ namespace Hasher2 {
             }
             set {
                 if (_compareHash != value) {
-                    _compareHash = Regex.Replace(value ?? "", @"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
+                    _compareHash = FindHash(value) ?? "";
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+                    SyncHashAlgo();
                 }
             }
         }
@@ -103,24 +126,77 @@ namespace Hasher2 {
             }
         }
 
-        public IList<string> AvailableAlgorithms = new List<string>() {
-            "CRC32",
-            HashAlgorithmNames.Md5,
-            HashAlgorithmNames.Sha1,
-            HashAlgorithmNames.Sha256,
-            HashAlgorithmNames.Sha384,
-            HashAlgorithmNames.Sha512,
+        public struct AvailableAlgorithm {
+            public string Name;
+            public int HashLength;
+            public bool Enabled;
+            public Func<object> Factory;
+        }
+
+        public static IList<AvailableAlgorithm> AvailableAlgorithms = new List<AvailableAlgorithm>() {
+            new AvailableAlgorithm() {
+                Name = "CRC32",
+                HashLength = 32,
+                Enabled = true,
+                Factory = () => new Crc32(),
+            },
+            new AvailableAlgorithm() {
+                Name = "CRC64",
+                HashLength = 64,
+                Enabled = false,
+                Factory = () => new Crc64(),
+            },
+            new AvailableAlgorithm() {
+                Name = HashAlgorithmNames.Md5,
+                HashLength = 128,
+                Enabled = true,
+                Factory = () => HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Md5).CreateHash(),
+            },
+            new AvailableAlgorithm() {
+                Name = HashAlgorithmNames.Sha1,
+                HashLength = 160,
+                Enabled = true,
+                Factory = () => HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha1).CreateHash(),
+            },
+            new AvailableAlgorithm() {
+                Name = HashAlgorithmNames.Sha256,
+                HashLength = 256,
+                Enabled = true,
+                Factory = () => HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha256).CreateHash(),
+            },
+            new AvailableAlgorithm() {
+                Name = HashAlgorithmNames.Sha384,
+                HashLength = 384,
+                Enabled = true,
+                Factory = () => HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha384).CreateHash(),
+            },
+            new AvailableAlgorithm() {
+                Name = HashAlgorithmNames.Sha512,
+                HashLength = 512,
+                Enabled = true,
+                Factory = () => HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha512).CreateHash(),
+            },
         };
 
-        public static object CreateHash(string algoId) {
-            switch (algoId) {
-                case "CRC32":
-                    return new Crc32();
-                case "CRC64":
-                    return new Crc64();
-                default:
-                    return HashAlgorithmProvider.OpenAlgorithm(algoId).CreateHash();
+        public IList<string> AvailableAlgorithmNames = AvailableAlgorithms.Where(x => x.Enabled).Select(x => x.Name).ToList();
+
+        void SyncHashAlgo() {
+            var bits = CompareHash?.Length * 4;
+            foreach (var avail in AvailableAlgorithms) {
+                if (avail.Enabled && avail.HashLength == bits) {
+                    SelectedAlgorithm = avail.Name;
+                    return;
+                }
             }
+        }
+
+        public static object CreateHash(string algoId) {
+            foreach (var avail in AvailableAlgorithms) {
+                if (avail.Enabled && avail.Name == algoId) {
+                    return avail.Factory();
+                }
+            }
+            return null;
         }
 
         private bool _hashOutputInSync;

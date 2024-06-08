@@ -141,7 +141,6 @@ namespace Hasher2 {
         private async void PasteButton_Click(object sender, RoutedEventArgs e) {
             if (Clipboard.GetContent().Contains(StandardDataFormats.Text)) {
                 ViewModel.CompareHash = await Clipboard.GetContent().GetTextAsync();
-                SyncHashAlgo();
             }
         }
 
@@ -229,38 +228,6 @@ namespace Hasher2 {
 
         private void OutputHash_GotFocus(object sender, RoutedEventArgs e) {
             (sender as TextBox)?.SelectAll();
-        }
-
-        private void CompareHash_Paste(object sender, TextControlPasteEventArgs e) {
-            SyncHashAlgo();
-        }
-
-        private void SyncHashAlgo() {
-            switch (ViewModel.CompareHash?.Length) {
-                case 8:
-                    ViewModel.SelectedAlgorithm = "CRC32";
-                    break;
-                case 16:
-                    ViewModel.SelectedAlgorithm = "CRC64";
-                    break;
-                case 32:
-                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Md5;
-                    break;
-                case 40:
-                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha1;
-                    break;
-                case 64:
-                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha256;
-                    break;
-                case 96:
-                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha384;
-                    break;
-                case 128:
-                    ViewModel.SelectedAlgorithm = HashAlgorithmNames.Sha512;
-                    break;
-                default:
-                    break;
-            }
         }
 
         private void ComboBox_Loaded(object sender, RoutedEventArgs e) {
