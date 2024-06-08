@@ -45,6 +45,7 @@
         <Grid x:Name="AppTitleBar" Background="Transparent">
             <TextBlock
                 x:Name="AppTitleBarText"
+                x:Uid="AppTitleBarText"
                 Text="Hasher"
                 Margin="12,0"
                 HorizontalAlignment="Left"
@@ -58,6 +59,7 @@
             Spacing="12"
             Margin="12,0">
             <ComboBox
+                x:Uid="HashAlgoSelector"
                 Header="Hash algorithm"
                 SelectedValue="{x:Bind ViewModel.SelectedAlgorithm, Mode=TwoWay}"
                 IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
@@ -69,6 +71,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button
+                    x:Uid="BrowseButton"
                     Grid.Column="0"
                     Content="Choose a file to hash"
                     IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}"
@@ -82,12 +85,14 @@
             </Grid>
 
             <TextBox
+                x:Uid="OutputHashTextbox"
                 Header="Output hash"
                 IsReadOnly="True"
                 Text="{x:Bind ViewModel.OutputHash, Mode=OneWay}"
                 GotFocus="OutputHash_GotFocus" />
 
             <TextBox
+                x:Uid="CompareHashTextbox"
                 Header="Compare hash"
                 Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}"
                 Paste="CompareHash_Paste" />
@@ -101,8 +106,8 @@
                             PropertyName="Foreground"
                             Value="{ThemeResource SystemErrorTextColor}" />
                         <icore:ChangePropertyAction
-                            PropertyName="Text"
-                            Value="Output hash is out of date." />
+                            x:Uid="NeedsRehashText"
+                            PropertyName="Text" />
                     </icore:DataTriggerBehavior>
                     
                     <icore:DataTriggerBehavior
@@ -112,8 +117,8 @@
                             PropertyName="Foreground"
                             Value="{ThemeResource SystemBaseHighColor}" />
                         <icore:ChangePropertyAction
-                            PropertyName="Text"
-                            Value="Hashes match." />
+                            x:Uid="HashesMatchText"
+                            PropertyName="Text" />
                     </icore:DataTriggerBehavior>
                     
                     <icore:DataTriggerBehavior
@@ -123,8 +128,8 @@
                             PropertyName="Foreground"
                             Value="{ThemeResource SystemErrorTextColor}" />
                         <icore:ChangePropertyAction
-                            PropertyName="Text"
-                            Value="Hashes do not match." />
+                            x:Uid="HashesDoNotMatchText"
+                            PropertyName="Text" />
                     </icore:DataTriggerBehavior>
                     
                     <icore:DataTriggerBehavior
@@ -162,11 +167,13 @@
             OverflowButtonVisibility="Collapsed"
             DefaultLabelPosition="Right">
             <AppBarButton
+                x:Uid="TransferButton"
                 IsEnabled="{x:Bind ViewModel.HashValueReady, Mode=OneWay}"
                 Icon="Switch"
                 Label="Transfer"
                 Click="TransferButton_Click" />
             <AppBarButton
+                x:Uid="CopyButton"
                 IsEnabled="{x:Bind ViewModel.HashValueReady, Mode=OneWay}"
                 Icon="Copy"
                 Label="Copy"
@@ -175,27 +182,33 @@
                     <KeyboardAccelerator Modifiers="Control" Key="C" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
-            <AppBarButton Icon="Paste" Label="Paste" Click="PasteButton_Click">
+            <AppBarButton
+                x:Uid="PasteButton"
+                Icon="Paste"
+                Label="Paste"
+                Click="PasteButton_Click">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="V" />
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
             <AppBarButton
                 IsEnabled="{x:Bind ViewModel.PickedFileReady, Mode=OneWay}"
+                Icon="Play"
+                Label="Hash"
                 Click="HashButton_Click">
                 <i:Interaction.Behaviors>
                     <icore:DataTriggerBehavior
                         Binding="{x:Bind ViewModel.Enabled, Mode=OneWay}"
                         Value="True">
                         <icore:ChangePropertyAction PropertyName="Icon" Value="Play" />
-                        <icore:ChangePropertyAction PropertyName="Label" Value="Hash" />
+                        <icore:ChangePropertyAction x:Uid="HashButtonLabel" PropertyName="Label" />
                     </icore:DataTriggerBehavior>
 
                     <icore:DataTriggerBehavior
                         Binding="{x:Bind ViewModel.Enabled, Mode=OneWay}"
                         Value="False">
                         <icore:ChangePropertyAction PropertyName="Icon" Value="Cancel" />
-                        <icore:ChangePropertyAction PropertyName="Label" Value="Cancel" />
+                        <icore:ChangePropertyAction x:Uid="CancelButtonLabel" PropertyName="Label" />
                     </icore:DataTriggerBehavior>
                 </i:Interaction.Behaviors>
             </AppBarButton>
