@@ -94,7 +94,8 @@
             <TextBox
                 x:Uid="CompareHashTextbox"
                 Header="Compare hash"
-                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}" />
+                Text="{x:Bind ViewModel.CompareHash, Mode=TwoWay}"
+                Paste="CompareHash_Paste" />
 
             <TextBlock>
                 <i:Interaction.Behaviors>

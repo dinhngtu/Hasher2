@@ -140,7 +140,7 @@ namespace Hasher2 {
 
         private async void PasteButton_Click(object sender, RoutedEventArgs e) {
             if (Clipboard.GetContent().Contains(StandardDataFormats.Text)) {
-                ViewModel.CompareHash = await Clipboard.GetContent().GetTextAsync();
+                ViewModel.OnPaste(await Clipboard.GetContent().GetTextAsync());
             }
         }
 
@@ -228,6 +228,13 @@ namespace Hasher2 {
 
         private void OutputHash_GotFocus(object sender, RoutedEventArgs e) {
             (sender as TextBox)?.SelectAll();
+        }
+
+        private async void CompareHash_Paste(object sender, TextControlPasteEventArgs e) {
+            if (Clipboard.GetContent().Contains(StandardDataFormats.Text)) {
+                e.Handled = true;
+                ViewModel.OnPaste(await Clipboard.GetContent().GetTextAsync());
+            }
         }
 
         private void ComboBox_Loaded(object sender, RoutedEventArgs e) {

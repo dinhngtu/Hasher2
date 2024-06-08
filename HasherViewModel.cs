@@ -39,25 +39,6 @@ namespace Hasher2 {
             }
         }
 
-        string FindHash(string value) {
-            if (!string.IsNullOrEmpty(OutputHash)) {
-                var hashStringLen = OutputHash.Length;
-                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
-                if (match.Success) {
-                    return Regex.Replace(match.Value, $"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
-                }
-            }
-            // long hash to short hash
-            foreach (var avail in AvailableAlgorithms.Reverse()) {
-                var hashStringLen = avail.HashLength / 4;
-                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
-                if (match.Success) {
-                    return Regex.Replace(match.Value, $"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
-                }
-            }
-            return null;
-        }
-
         private string _compareHash;
         public string CompareHash {
             get {
@@ -65,9 +46,8 @@ namespace Hasher2 {
             }
             set {
                 if (_compareHash != value) {
-                    _compareHash = FindHash(value) ?? "";
+                    _compareHash = Regex.Replace(value, $"[^0-9a-fA-F]", "").ToLower(CultureInfo.InvariantCulture);
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-                    SyncHashAlgo();
                 }
             }
         }
@@ -180,6 +160,25 @@ namespace Hasher2 {
 
         public IList<string> AvailableAlgorithmNames = AvailableAlgorithms.Where(x => x.Enabled).Select(x => x.Name).ToList();
 
+        string FindHash(string value) {
+            if (!string.IsNullOrEmpty(OutputHash)) {
+                var hashStringLen = OutputHash.Length;
+                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
+                if (match.Success) {
+                    return match.Value;
+                }
+            }
+            // long hash to short hash
+            foreach (var avail in AvailableAlgorithms.Reverse()) {
+                var hashStringLen = avail.HashLength / 4;
+                var match = Regex.Match(value ?? "", $"([0-9a-fA-F](?:[- ]*)){{{hashStringLen}}}");
+                if (match.Success) {
+                    return match.Value;
+                }
+            }
+            return null;
+        }
+
         void SyncHashAlgo() {
             var bits = CompareHash?.Length * 4;
             foreach (var avail in AvailableAlgorithms) {
@@ -188,6 +187,11 @@ namespace Hasher2 {
                     return;
                 }
             }
+        }
+
+        public void OnPaste(string value) {
+            CompareHash = FindHash(value) ?? "";
+            SyncHashAlgo();
         }
 
         public static object CreateHash(string algoId) {
