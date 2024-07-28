@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.IO.Hashing;
@@ -98,6 +99,9 @@ namespace Hasher2 {
             ViewModel.PickedFile = picked;
             ViewModel.Progress = 0.0;
             ViewModel.ShowProgress = false;
+            if (string.IsNullOrEmpty(ViewModel.CompareHash)) {
+                ViewModel.SetCompareHashFromFileName(picked.Name);
+            }
             if (autoHash && (await picked.GetBasicPropertiesAsync()).Size < AutoHashSize) {
                 HashButton_Click(sender, e);
             }

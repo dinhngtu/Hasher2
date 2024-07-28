@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO.Hashing;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
@@ -177,6 +178,14 @@ namespace Hasher2 {
                 }
             }
             return null;
+        }
+
+        public void SetCompareHashFromFileName(string name) {
+            var match = Regex.Match(name ?? "", @".+\[([0-9a-fA-F]{8})\]");
+            if (match.Success) {
+                CompareHash = match.Groups[1].Value;
+                SyncHashAlgo();
+            }
         }
 
         void SyncHashAlgo() {
